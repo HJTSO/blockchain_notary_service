@@ -1,0 +1,22 @@
+{
+  "name": "blockchain_notary_service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HJTSO/blockchain_notary_service.git"
+  },
+  "author": "HJT",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HJTSO/blockchain_notary_service/issues"
+  },
+  "homepage": "https://github.com/HJTSO/blockchain_notary_service#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
