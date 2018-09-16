@@ -8,9 +8,7 @@ const SHA256 = require('crypto-js/sha256');
 |  Learn more: level: https://github.com/Level/level     |
 |  =============================================================*/
 // ● Configure simpleChain.js with levelDB to persist blockchain dataset using the level Node.js library.
-const level = require('level');
-const chainDB = './chaindata';
-const db = level(chainDB);
+const db = require('level')('./data/chain')
 const Block = require('./block')
 
 // Add data to levelDB with key/value pair
@@ -130,6 +128,73 @@ class Blockchain{
       getLevelDBData(blockHeight, function(block) {
         console.log(JSON.parse(block));
       });
+    }
+	
+ 
+    async getBlockByHeight (key) {
+      return new Promise((resolve, reject) => {
+        db.get(key, (error, value) => {
+          if (value === undefined) {
+            return reject('Not found')
+          } else if (error) {
+            return reject(error)
+          }
+
+          value = JSON.parse(value)
+
+          if (parseInt(key) > 0) {
+            value.body.star.storyDecoded = new Buffer(value.body.star.story, 'hex').toString()
+          }
+
+          return resolve(value)
+        })
+      })
+    }
+
+    async getBlockByHash (hash) {
+      let block
+
+      return new Promise((resolve, reject) => {
+        db.createReadStream().on('data', (data) => {    
+          block = JSON.parse(data.value)
+        
+          if (block.hash === hash) {
+            if (parseInt(data.key) > 0) {
+              block.body.star.storyDecoded = new Buffer(block.body.star.story, 'hex').toString()
+              return resolve(block)
+            } else {
+              return resolve(block)
+            }
+          }
+        }).on('error', (error) => {
+          return reject(error)
+        }).on('close', () => {
+          return reject('Not found')
+        })
+      })
+    }
+  
+    async getBlocksByAddress (address) {
+      const blocks = []
+      let block
+
+      return new Promise((resolve, reject) => {
+        db.createReadStream().on('data', (data) => {
+          // Don't check the genesis block
+          if (parseInt(data.key) > 0) {
+            block = JSON.parse(data.value)
+
+            if (block.body.address === address) {
+              block.body.star.storyDecoded = new Buffer(block.body.star.story, 'hex').toString()
+              blocks.push(block)
+            }
+          }
+        }).on('error', (error) => {
+          return reject(error)
+        }).on('close', () => {
+          return resolve(blocks)
+        })
+      })
     }
 
       // ● Validate a block stored within levelDB

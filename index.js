@@ -1,4 +1,5 @@
 // Using express.js
+const compression = require('compression')
 const express = require('express')
 const index = express()
 
@@ -10,16 +11,17 @@ const chain = new Blockchain()
 const StarValidation = require('./star-validation')
 
 // index.js is configured with web service running on the localhost with port 8000
+index.use(compression())
 index.listen(8000, () => console.log('listening port: 8000'))
 index.use(bodyParser.json())
-index.get('/', (req, res) => res.status(404).json({ //could not be show in terminal
+index.get('/', (req, res) => res.status(404).json({ 
   "status": 404,
-  "message": "Accepted endpoints: POST /block or GET /block/{BLOCK_HEIGHT}" 
+  "message": "Please check endpoints" 
 }))
 
 
 //Criteria: Web API post endpoint validates request with JSON response.
-app.post('/requestValidation', async (req, res) => {
+index.post('/requestValidation', async (req, res) => {
   const starValidation = new StarValidation(req)
 
   try {
@@ -44,9 +46,41 @@ app.post('/requestValidation', async (req, res) => {
     "validationWindow": validationWindow
   }
 
-  starValidation.addAddress(data)
-
+  //starValidation.addAddress(data)
+  starValidation.save(data)
+  
   res.json(data)
+})
+
+// Web API post endpoint validates message signature with JSON response
+index.post('/message-signature/validate', async (req, res) => {
+  const starValidation = new StarValidation(req)
+
+  try {
+    starValidation.validateAddressAndSignatureParameters()
+  } catch (error) {
+    res.status(400).json({
+      status: 400,
+      message: error
+    })
+    return
+  }
+
+  try {
+    const { address, signature } = req.body
+    const response = await starValidation.validateMessageSignature(address, signature)
+
+    if (response.registerStar) {
+      res.json(response)
+    } else {
+      res.status(401).json(response)
+    }
+  } catch (error) {
+    res.status(404).json({
+      status: 404,
+      message: error
+    })
+  }
 })
 
 // GET Block endpoint using URL path with block height parameter. Preferred URL path http://localhost:8000/block/{BLOCK_HEIGHT}
@@ -58,6 +92,36 @@ index.get('/block/:height', async (req, res) => {
     res.status(404).json({ //could not be show in terminal
       "status": 404,
       "message": "This block is not found." 
+    })
+  }
+})
+
+// Get star block by wallet address (blockchain identity) with JSON response.
+index.get('/stars/address:address', async (req, res) => {
+  try {
+    const address = req.params.address.slice(1)
+    const response = await chain.getBlocksByAddress(address)
+
+    res.send(response)
+  } catch (error) {
+    res.status(404).json({
+      status: 404,
+      message: 'Block not found'
+    })
+  }
+})
+
+// Get star block by hash with JSON response.
+index.get('/stars/hash:hash', async (req, res) => {
+  try {
+    const hash = req.params.hash.slice(1)
+    const response = await chain.getBlockByHash(hash)
+
+    res.send(response)
+  } catch (error) {
+    res.status(404).json({
+      status: 404,
+      message: 'Block not found'
     })
   }
 })

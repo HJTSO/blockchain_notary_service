@@ -1,0 +1,13 @@
+curl -X "POST" "http://localhost:8000/requestValidation" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -d $'{
+  "address": "12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X"
+}'
+
+
+curl -X "POST" "http://localhost:8000/message-signature/validate" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -d $'{
+  "address": "12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X",
+  "signature": "H3hH/LEy/aWL3xYQM+KaWTtSUzVH0aby8HcQMwYJ03Fvc1g1wZP03k9LpMzMp2Y9yV4avjexwrX1eVCRsAzqT9k="
+}'
