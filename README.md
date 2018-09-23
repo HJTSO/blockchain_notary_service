@@ -347,8 +347,8 @@ If the block wasn't found, it was showed:
 
 ## Udacity honor
 
-Giving credits for places that helped to do this project:
-
 Udacity Project4 Concepts section
+
 Udacity slack of nanodegree
+
 https://github.com/RusPosevkin/blockchain-server
