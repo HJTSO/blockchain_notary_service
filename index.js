@@ -89,9 +89,9 @@ index.get('/block/:height', async (req, res) => {
     const response = await chain.getBlock(req.params.height)
     res.send(response)
   } catch (error) {
-    res.status(404).json({ //could not be show in terminal
+    res.status(404).json({ 
       "status": 404,
-      "message": "This block is not found." 
+      "message": 'This block is not found' 
     })
   }
 })

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/HJTSO/blockchain_notary_service#readme",
   "dependencies": {
+    "address": "^1.0.3",
     "ava": "^0.25.0",
     "bitcoinjs-message": "^2.0.0",
     "compression": "^1.7.3",
