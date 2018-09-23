@@ -1,13 +1,60 @@
+
+Wallet address:
+12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X
+
+Message:
+12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X:1537630417820:starRegistry
+
+Signature:
+H7rTRNDkCtzQr3pHejCTktcfBrA/PjyMGsngBvK0g0yFQgZWnXVfrLqY9aq4oR+IOGYQhJHk32oYglK9SMeKlSM=
+
+---------------------------------------------------------------------------------
+Blockchain ID validation routine
+
+1. Blockchain ID Validation Request
+
 curl -X "POST" "http://localhost:8000/requestValidation" \
      -H 'Content-Type: application/json; charset=utf-8' \
      -d $'{
   "address": "12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X"
 }'
 
+2. Blockchain ID Message Signature Validation
 
 curl -X "POST" "http://localhost:8000/message-signature/validate" \
      -H 'Content-Type: application/json; charset=utf-8' \
      -d $'{
   "address": "12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X",
-  "signature": "H3hH/LEy/aWL3xYQM+KaWTtSUzVH0aby8HcQMwYJ03Fvc1g1wZP03k9LpMzMp2Y9yV4avjexwrX1eVCRsAzqT9k="
+  "signature": "IOd5QK4cDReUOv9NSSvehgG9u+W44+KawXgc4zxHp98XAgQ3+iYYgGrCWsmR5sbh+tmTWhm7Fm10pKHbBv1Ct3U="
 }'
+
+---------------------------------------------------------------------------------
+Star registration Endpoint
+
+3. Stars Registration
+
+curl -X "POST" "http://localhost:8000/block" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -d $'{
+  "address": "12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X",
+  "star": {
+    "dec": "-26° 29'\'' 24.9",
+    "ra": "16h 29m 1.0s",
+    "story": "Found star using https://www.google.com/sky/"
+  }
+}'
+
+---------------------------------------------------------------------------------
+Star Lookup
+
+4. Stars Lookup by Wallet Address
+
+curl "http://localhost:8000/stars/address:12Lo3xPNq7KL6sqLvQy6kxeuY5pzVsFg5X"
+
+5. Star Lookup by Block Hash
+
+curl "http://localhost:8000/stars/hash:2eb83385f12709dbfeb33c67eb25394868d64e3f3e8c05c886320cc21c764916"
+
+6. Star Lookup by Block Height
+
+curl "http://localhost:8000/block/1"

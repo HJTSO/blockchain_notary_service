@@ -56,10 +56,10 @@ function getHeightFromLevelDB(callback) {
       i++;
     })
     .on('error', function (err) {
-      return reject(error)
+      console.log('Error found: ', err);
     })
     .on('close', function () {
-      return resolve(height)
+      callback(i-1);
     });
 }
 
@@ -69,21 +69,21 @@ function getHeightFromLevelDB(callback) {
 
 class Blockchain{
     constructor(){
-		//         const height = this.getBlockHeight().then(height => {
-		// 	        console.log('Height: ' + height);
-		// 	        if (height < 0) {
-		// 			  // Genesis block persist as the first block in the blockchain
-		// 			  this.addBlock(new Block("First block in the chain - Genesis block"));
-		// 			  console.log('Genesis block');
-		// 	        }
-		//         })
-		        this.getBlockHeight(height => {
-		        	//console.log('Height: ',height);
-			        if (height < 0) {
-					  // ● Genesis block persist as the first block in the blockchain	
-					  this.addBlock(new Block("First block in the chain - Genesis block"));
-			        }
-		        })
+        const height = this.getBlockHeight().then(height => {
+	        console.log('Height: ' + height);
+	        if (height < 0) {
+			  // Genesis block persist as the first block in the blockchain
+			  this.addBlock(new Block("First block in the chain - Genesis block"));
+			  console.log('Genesis block');
+	        }
+        })
+			  //         this.getBlockHeight(height => {
+			  //         	//console.log('Height: ',height);
+			  // 	        if (height < 0) {
+			  // // ● Genesis block persist as the first block in the blockchain
+			  // this.addBlock(new Block("First block in the chain - Genesis block"));
+			  // 	        }
+			  //         })
     }
 
     // Add new block
@@ -111,6 +111,17 @@ class Blockchain{
       });
     }
 
+      // ● Retrieve current block height within the LevelDB chain
+    getBlockHeight(callback){
+	  return new Promise((resolve, reject) => {
+		  getHeightFromLevelDB(function(height) {
+		          console.log('Height: ' + (height).toString());
+				  resolve(height)
+		        });
+	  })
+	  // getHeightFromLevelDB(callback);
+    }
+
     // ● Gretrieve a block by it's block heigh within the LevelDB chain
     getBlock(blockHeight){
       // return object as a single string
@@ -119,7 +130,8 @@ class Blockchain{
       });
     }
 	
-    async getBlockHeight (key) {
+ 
+    async getBlockByHeight (key) {
       return new Promise((resolve, reject) => {
         db.get(key, (error, value) => {
           if (value === undefined) {

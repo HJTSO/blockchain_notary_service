@@ -40,10 +40,10 @@ index.post('/requestValidation', async (req, res) => {
   const validationWindow = 300
 
   const data = {
-    "address": address,
-    "message": message,
-    "timestamp": timestamp,
-    "validationWindow": validationWindow
+    address: address,
+    message: message,
+    requestTimeStamp: timestamp,
+    validationWindow: validationWindow
   }
 
   //starValidation.addAddress(data)
@@ -153,5 +153,7 @@ index.post('/block', async (req, res) => {
   await chain.addBlock(new Block(req.body.body))
   const height = await chain.getBlockHeight()
   const response = await chain.getBlock(height)
-  res.send(response)
+  
+  starValidation.invalidate(address)
+  res.status(201).send(response)
 })
