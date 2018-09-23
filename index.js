@@ -20,7 +20,7 @@ index.get('/', (req, res) => res.status(404).json({
 }))
 
 
-//Criteria: Web API post endpoint validates request with JSON response.
+// Web API post endpoint validates request with JSON response.
 index.post('/requestValidation', async (req, res) => {
   const starValidation = new StarValidation(req)
 
@@ -126,7 +126,7 @@ index.get('/stars/hash:hash', async (req, res) => {
   }
 })
 
-// POST Block endpoint using key/value pair within request body. Preferred URL path http://localhost:8000/block
+// POST Block endpoint using key/value pair within request body.
 //   POST URL path: http://localhost:8000/block
 //   Content-Type: indexlication/json
 //   Request body: {"body":"block body contents"}
@@ -139,8 +139,8 @@ index.post('/block', async (req, res) => {
         throw 'Signature is not valid or timestamp expired'
       }
     } catch (error) {
-      res.status(400).json({
-        status: 400,
+      res.status(401).json({
+        status: 401,
         message: error
       })
       return

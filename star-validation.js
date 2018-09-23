@@ -8,38 +8,25 @@ class StarValidation {
 
   validateAddressParameter() {
     if (!this.req.body.address) {
-      throw 'Fill the address parameter'
+      throw 'Fill the address'
     }
-
     return true
   }
 
   validateAddressAndSignatureParameters() {
     if (!this.validateAddressParameter() || !this.req.body.signature) {
-      throw 'Fill the address and signature parameters'
+      throw 'Fill the address and signature'
     }
   }
 
   validateNewStarRequest() {
     if (!this.validateAddressParameter() || !this.req.body.star) {
-      throw 'Fill the address and star parameters'
+      throw 'Fill the address and star'
     }
 
     // Validate ra, dec, story 
     if (typeof this.req.body.star.dec !== 'string' || typeof this.req.body.star.ra !== 'string' || typeof this.req.body.star.story !== 'string' || !this.req.body.star.dec.length || !this.req.body.star.ra.length || !this.req.body.star.story.length) {
-      throw "Your star information should include non-empty string properties 'dec', 'ra' and 'story'"
-    }
-
-    // Validate if story length less than 500 bytes
-    if (new Buffer(this.req.body.star.story).length > 500) {
-      throw 'Your star story too is long. Maximum size is 500 bytes'
-    }
-
-    // Check if string contains only ASCII symbols (0-126 char codes)
-    const isASCII = ((str) =>  /^[\x00-\x7F]*$/.test(str))
-
-    if (!isASCII(this.req.body.star.story)) {
-      throw 'Your star story contains non-ASCII symbols'
+      throw "This should include non-empty string properties 'dec', 'ra' and 'story'"
     }
   }
 
@@ -70,7 +57,6 @@ class StarValidation {
         }
 
         value = JSON.parse(value)
-
         const nowSubFiveMinutes = Date.now() - (5 * 60 * 1000)
         const isExpired = value.requestTimeStamp < nowSubFiveMinutes
         let isValid = false
@@ -85,7 +71,6 @@ class StarValidation {
         }
 
         this.save(value)
-
         return resolve({
             registerStar: !isExpired && isValid,
             status: value

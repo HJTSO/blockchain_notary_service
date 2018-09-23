@@ -71,7 +71,7 @@ http://localhost:8000/requestValidation
 **Parameters**
 
 ```
-height - The height of block
+address - The bitcoin address that you used
 ```
 
 **Example**
@@ -115,7 +115,8 @@ http://localhost:8000/message-signature/validate
 **Parameters**
 
 ```
-height - The height of block
+address - The bitcoin address that you used
+signature - Take it from the Electrum wallet
 ```
 
 **Example**
@@ -163,8 +164,8 @@ http://localhost:8000/block
 **Parameters**
 
 ```
-address - The addres that you used in last step
-star - Containing dec, ra and story (max 500 bytes)
+address - The bitcoin address that you used
+star - Containing dec, ra and story
 ```
 
 **Example**
@@ -221,7 +222,7 @@ http://localhost:8000/stars/address:address
 **Parameters**
 
 ```
-address - The address used
+address - The bitcoin address that you used
 ```
 
 **Example**
@@ -266,7 +267,7 @@ http://localhost:8000/stars/hash:hash
 **Parameters**
 
 ```
-hash - The hash of one block created before
+hash - The hash of one block created
 ```
 
 **Example**
@@ -347,8 +348,8 @@ If the block wasn't found, it was showed:
 
 ## Udacity honor
 
-Giving credits for places that helped to do this project:
-
 Udacity Project4 Concepts section
+
 Udacity slack of nanodegree
+
 https://github.com/RusPosevkin/blockchain-server
