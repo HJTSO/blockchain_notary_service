@@ -24,7 +24,6 @@ class Blockchain{
           if (error) {
             return reject(error)
           }
-          console.log(`Block was added #${key}`)
           return resolve(`Block was added #${key}`)
         })
       })
@@ -41,12 +40,10 @@ class Blockchain{
         if(newBlock.height>0){
       	  const prevBlock = await this.getBlock(height)
       	  newBlock.previousBlockHash = prevBlock.hash
-      	  console.log(`Previous hash: ${newBlock.previousBlockHash}`)
 		}
 		
         // Block hash with SHA256 using newBlock and converting to a string
         newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-		console.log(`New hash: ${newBlock.hash}`)
 		
         // Store newBlock in LevelDB
         await this.addBlockToDB(newBlock.height, JSON.stringify(newBlock))
@@ -124,7 +121,6 @@ class Blockchain{
 
       return new Promise((resolve, reject) => {
         db.createReadStream().on('data', (data) => {
-          // Don't check the genesis block
           if (parseInt(data.key) > 0) {
             block = JSON.parse(data.value)
 

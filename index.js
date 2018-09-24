@@ -10,6 +10,45 @@ const Blockchain = require('./blockchain')
 const chain = new Blockchain()
 const StarValidation = require('./star-validation')
 
+validateAddressParameter = async (req, res, next) => {
+  try {
+    const starValidation = new StarValidation(req)
+    starValidation.validateAddressParameter()
+    next()
+  } catch (error) {
+    res.status(400).json({
+      status: 400,
+      message: error.message
+    })
+  }
+}
+
+validateSignatureParameter = async (req, res, next) => {
+  try {
+    const starValidation = new StarValidation(req)
+    starValidation.validateSignatureParameter()
+    next()
+  } catch (error) {
+    res.status(400).json({
+      status: 400,
+      message: error.message
+    })
+  }
+}
+
+validateNewStarRequest = async (req, res, next) => {
+  try {
+    const starValidation = new StarValidation(req)
+    starValidation.validateNewStarRequest()
+    next()
+  } catch (error) {
+    res.status(400).json({
+      status: 400,
+      message: error.message
+    })
+  }
+}
+
 // index.js is configured with web service running on the localhost with port 8000
 index.use(compression())
 index.listen(8000, () => console.log('listening port: 8000'))
@@ -22,34 +61,16 @@ index.get('/', (req, res) => res.status(404).json({
 
 // Web API post endpoint validates request with JSON response.
 index.post('/requestValidation', async (req, res) => {
-  const starValidation = new StarValidation(req)
+    const starValidation = new StarValidation(req)
+    const address = req.body.address
 
-  try {
-    starValidation.validateAddressParameter()
-  } catch (error) {
-    res.status(400).json({
-      status: 400,
-      message: error
-    })
-    return
-  }
+    try {
+      data = await starValidation.getPendingAddressRequest(address)
+    } catch (error) {
+      data = await starValidation.saveNewRequestValidation(address)
+    }
 
-  const address = req.body.address
-  const timestamp = Date.now()
-  const message = `${address}:${timestamp}:starRegistry`
-  const validationWindow = 300
-
-  const data = {
-    address: address,
-    message: message,
-    requestTimeStamp: timestamp,
-    validationWindow: validationWindow
-  }
-
-  //starValidation.addAddress(data)
-  starValidation.save(data)
-  
-  res.json(data)
+    res.json(data)
 })
 
 // Web API post endpoint validates message signature with JSON response
@@ -133,27 +154,30 @@ index.get('/stars/hash:hash', async (req, res) => {
 index.post('/block', async (req, res) => {
     const starValidation = new StarValidation(req)
     try {
-      starValidation.validateNewStarRequest()
       const isValid = await starValidation.isValid()
       if (!isValid) {
-        throw 'Signature is not valid or timestamp expired'
+        throw 'Signature is not valid'
       }
     } catch (error) {
       res.status(401).json({
         status: 401,
-        message: error
+        message: error.message
       })
       return
     }
-  
-  const body = { address, star } = req.body
-  const story = star.story
-  body.star.story = new Buffer(story).toString('hex')
-  
-  await chain.addBlock(new Block(req.body.body))
-  const height = await chain.getBlockHeight()
-  const response = await chain.getBlock(height)
-  
-  starValidation.invalidate(address)
-  res.status(201).send(response)
+    const body = { address, star } = req.body
+    const story = star.story
+
+    body.star = {
+      dec: star.dec,
+      ra: star.ra,
+      story: new Buffer(story).toString('hex'),
+      mag: star.mag,
+      con: star.con
+    }
+    await chain.addBlock(new Block(body))
+    const height = await chain.getBlockHeight()
+    const response = await chain.getBlock(height)
+    starValidation.invalidate(address)
+    res.status(201).send(response)
 })

@@ -20,13 +20,28 @@ class StarValidation {
   }
 
   validateNewStarRequest() {
+    const MAX_STORY_BYTES = 500
+    const { star } = this.req.body
+    const { dec, ra, story} = star
+	  
     if (!this.validateAddressParameter() || !this.req.body.star) {
       throw 'Fill the address and star'
     }
 
-    // Validate ra, dec, story 
-    if (typeof this.req.body.star.dec !== 'string' || typeof this.req.body.star.ra !== 'string' || typeof this.req.body.star.story !== 'string' || !this.req.body.star.dec.length || !this.req.body.star.ra.length || !this.req.body.star.story.length) {
-      throw "This should include non-empty string properties 'dec', 'ra' and 'story'"
+    // Validate ra, dec, story
+    if (typeof dec !== 'string' || typeof ra !== 'string' || typeof story !== 'string' || !dec.length || !ra.length || !story.length) {
+      throw new Error("This should include non-empty string properties 'dec', 'ra' and 'story'")
+    }
+	
+	// Story is limited to 250 words (500 bytes) ASCII text
+    if (new Buffer(story).length > MAX_STORY_BYTES) {
+      throw new Error('The story too is long. Size is up to 500 bytes')
+    }
+
+    const isASCII = ((str) => /^[\x00-\x7F]*$/.test(str))
+
+    if (!isASCII(story)) {
+      throw new Error('The story contains non-ASCII symbols')
     }
   }
 
@@ -43,15 +58,72 @@ class StarValidation {
     db.del(address)
   }
 
-  save(data) {
-    db.put(data.address, JSON.stringify(data))
-  }
-
   async validateMessageSignature(address, signature) {
     return new Promise((resolve, reject) => {
       db.get(address, (error, value) => {
         if (value === undefined) {
-          return reject('Not found')
+          return reject(new Error('Not found'))
+        } else if (error) {
+          return reject(error)
+        }
+
+        value = JSON.parse(value)
+
+        if (value.messageSignature === 'valid') {
+          return resolve({
+            registerStar: true,
+            status: value
+        }) 
+        } else {
+          const nowSubFiveMinutes = Date.now() - (5 * 60 * 1000)
+          const isExpired = value.requestTimeStamp < nowSubFiveMinutes
+          let isValid = false
+  
+          if (isExpired) {
+              value.validationWindow = 0
+              value.messageSignature = 'Validation window was expired'
+          } else {
+              value.validationWindow = Math.floor((value.requestTimeStamp - nowSubFiveMinutes) / 1000) 
+  
+              try {
+                isValid = bitcoinMessage.verify(value.message, address, signature)
+              } catch (error) {
+                isValid = false
+              }
+            
+              value.messageSignature = isValid ? 'valid' : 'invalid'
+          }
+  
+          db.put(address, JSON.stringify(value))
+  
+          return resolve({
+              registerStar: !isExpired && isValid,
+              status: value
+          }) 
+        }
+      })
+    })
+  }
+
+  saveNewRequestValidation(address) {
+    const timestamp = Date.now()
+    const message = `${address}:${timestamp}:starRegistry`
+    const validationWindow = 300
+    const data = {
+      address: address,
+      message: message,
+      requestTimeStamp: timestamp,
+      validationWindow: validationWindow
+    }
+    db.put(data.address, JSON.stringify(data))
+    return data
+  }
+
+  async getPendingAddressRequest(address) {
+    return new Promise((resolve, reject) => {
+      db.get(address, (error, value) => {
+        if (value === undefined) {
+          return reject(new Error('Not found'))
         } else if (error) {
           return reject(error)
         }
@@ -59,22 +131,18 @@ class StarValidation {
         value = JSON.parse(value)
         const nowSubFiveMinutes = Date.now() - (5 * 60 * 1000)
         const isExpired = value.requestTimeStamp < nowSubFiveMinutes
-        let isValid = false
 
         if (isExpired) {
-            value.validationWindow = 0
-            value.messageSignature = 'Validation window was expired'
+            resolve(this.saveNewRequestValidation(address))
         } else {
-            value.validationWindow = Math.floor((value.requestTimeStamp - nowSubFiveMinutes) / 1000) 
-            isValid = bitcoinMessage.verify(value.message, address, signature)
-            value.messageSignature = isValid ? 'valid' : 'invalid'
+          const data = {
+            address: address,
+            message: value.message,
+            requestTimeStamp: value.requestTimeStamp,
+            validationWindow: Math.floor((value.requestTimeStamp - nowSubFiveMinutes) / 1000)
+          }
+          resolve(data)
         }
-
-        this.save(value)
-        return resolve({
-            registerStar: !isExpired && isValid,
-            status: value
-        })
       })
     })
   }
