@@ -75,7 +75,7 @@ class StarValidation {
             status: value
         }) 
         } else {
-          const nowSubFiveMinutes = Date.now() - (5 * 60 * 1000)
+          const nowSubFiveMinutes = Math.floor(Date.now()/1000) - (5 * 60)
           const isExpired = value.requestTimeStamp < nowSubFiveMinutes
           let isValid = false
   
@@ -83,7 +83,7 @@ class StarValidation {
               value.validationWindow = 0
               value.messageSignature = 'Validation window was expired'
           } else {
-              value.validationWindow = Math.floor((value.requestTimeStamp - nowSubFiveMinutes) / 1000) 
+              value.validationWindow = value.requestTimeStamp - nowSubFiveMinutes
   
               try {
                 isValid = bitcoinMessage.verify(value.message, address, signature)
@@ -106,7 +106,7 @@ class StarValidation {
   }
 
   saveNewRequestValidation(address) {
-    const timestamp = Date.now()
+    const timestamp = Math.floor(Date.now()/1000)
     const message = `${address}:${timestamp}:starRegistry`
     const validationWindow = 300
     const data = {
@@ -129,7 +129,7 @@ class StarValidation {
         }
 
         value = JSON.parse(value)
-        const nowSubFiveMinutes = Date.now() - (5 * 60 * 1000)
+        const nowSubFiveMinutes = Math.floor(Date.now()/1000) - (5 * 60)
         const isExpired = value.requestTimeStamp < nowSubFiveMinutes
 
         if (isExpired) {
@@ -139,7 +139,7 @@ class StarValidation {
             address: address,
             message: value.message,
             requestTimeStamp: value.requestTimeStamp,
-            validationWindow: Math.floor((value.requestTimeStamp - nowSubFiveMinutes) / 1000)
+            validationWindow: value.requestTimeStamp - nowSubFiveMinutes
           }
           resolve(data)
         }
